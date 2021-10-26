@@ -1,0 +1,10 @@
+// @media (max-width: $small) = from 0 to 480
+$small: 480px;
+// from 0 to 769
+// from 481 to 769
+$medium: 768px;
+
+@mixin outer-wrap {
+  max-width: 1184px;
+  margin: auto;
+}
