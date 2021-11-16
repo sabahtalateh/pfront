@@ -1,10 +1,13 @@
 <script lang="ts">
 	import PetsList from '$lib/PetsList.svelte'
-	import PetsListFilters from '$lib/filters/PetsListFilters.svelte'
+	import PetsListFilters from '$lib/index/filters/PetsListFilters.svelte'
 	import { set_yandex_maps } from '$lib/stores/yandex_maps'
 	import { onMount } from 'svelte'
+  import Header from '$lib/SiteHeader.svelte'
+  import { init_filters } from '$lib/index/stores/filters'
 
 	onMount(() => {
+    init_filters()
 		window.ymaps.ready(set_yandex_maps)
 	})
 </script>
@@ -18,5 +21,6 @@
 	</script>
 </svelte:head>
 
+<Header />
 <PetsListFilters />
-<PetsList />
+<!--<PetsList />-->
