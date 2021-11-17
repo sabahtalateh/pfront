@@ -1,10 +1,10 @@
 <svelte:head>
-	<title>Поиск животных</title>
+  <title>Поиск животных</title>
 
-	<!--	<script-->
-	<!--		src="https://api-maps.yandex.ru/2.1/?apikey=c6d6e7f0-7277-45a2-9131-5692f31a1652&amp;lang=ru_RU"-->
-	<!--		type="text/javascript">-->
-	<!--	</script>-->
+  <!--	<script-->
+  <!--		src="https://api-maps.yandex.ru/2.1/?apikey=c6d6e7f0-7277-45a2-9131-5692f31a1652&amp;lang=ru_RU"-->
+  <!--		type="text/javascript">-->
+  <!--	</script>-->
 </svelte:head>
 
 <script lang="ts">
@@ -48,19 +48,19 @@
 </script>
 
 {#if ($filters.load === 'loading')}
-	{#if $page_loading_time > show_loader_after}
-		<h1
-			transition:fade={{duration: loader_transition_duration}}
-			on:introstart={() => loader_visible = true}
-			on:outroend={() => {page_loaded = true; loader_visible = false}}
-		>loading</h1>
-	{/if}
+  {#if $page_loading_time > show_loader_after}
+    <h1
+      transition:fade={{duration: loader_transition_duration}}
+      on:introstart={() => loader_visible = true}
+      on:outroend={() => {page_loaded = true; loader_visible = false}}
+    >loading</h1>
+  {/if}
 {/if}
 
 {#if page_loaded && !loader_visible}
-	<div transition:fade={{duration: loader_transition_duration}}>
-		<Header />
-		<PetsListFilters />
-		<PetsList />
-	</div>
+  <div transition:fade={{duration: loader_transition_duration}}>
+    <Header />
+    <PetsListFilters />
+    <PetsList />
+  </div>
 {/if}
