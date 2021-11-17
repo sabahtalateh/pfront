@@ -2,11 +2,11 @@
 import { ymaps } from '@types/yandex-maps'
 
 declare global {
-	interface Window {
-		ymaps: ymaps,
-		localStorage: any,
-		navigator: any
-	}
+  interface Window {
+    ymaps: ymaps,
+    localStorage: any,
+    navigator: any
+  }
 }
 
 window.ymaps = ymaps || {}

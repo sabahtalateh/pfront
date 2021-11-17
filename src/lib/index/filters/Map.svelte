@@ -13,7 +13,6 @@
   let circle
 
 
-
   onMount(() => {
     mounted = true
     load_map()
@@ -112,9 +111,9 @@
 </script>
 
 <section class="filtering-map wrap hidden">
-	<div class="filter-map">
-		<div id="map" class="map" />
-	</div>
+  <div class="filter-map">
+    <div id="map" class="map" />
+  </div>
 </section>
 
 <style lang="scss">

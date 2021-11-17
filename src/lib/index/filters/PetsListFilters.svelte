@@ -57,67 +57,67 @@
 </script>
 
 <section class="filtering wrap">
-	<div class="filter-wrp select-wrp">
-		<div class="filter select-variant">
-			<label for="lost">
-				<input id="lost" type="radio" value="lost" name="lost-found" />
-				Потеряные
-			</label>
-			<label for="found">
-				<input id="found" type="radio" value="found" name="lost-found" />
-				Найденые
-			</label>
-		</div>
-	</div>
-	<!--	<div class="filter-wrp select-wrp">-->
-	<!--		<div class="filter select-variant">-->
-	<!--			<label for="cat">-->
-	<!--				<input id="cat" type="radio" value="dog" name="animal" />-->
-	<!--				Собаки-->
-	<!--			</label>-->
-	<!--			<label for="dog">-->
-	<!--				<input id="dog" type="radio" value="cat" name="animal" />-->
-	<!--				Коты-->
-	<!--			</label>-->
-	<!--		</div>-->
-	<!--	</div>-->
-	<!--	<div class="filter-wrp date-picker-wrp">-->
-	<!--		<div class="filter">-->
-	<!--			<div class="date">-->
-	<!--				<input type="date" id="when" value="{date}" />-->
-	<!--			</div>-->
-	<!--			<div class="days">-->
-	<!--				+/-&nbsp;<input class="approx-days" type="number" max="90" min="0" value="5">&nbsp;дней-->
-	<!--			</div>-->
-	<!--		</div>-->
-	<!--	</div>-->
-	<!--	<div class="filter-wrp address-wrap">-->
-	<!--		<ul class="suggestions">-->
-	<!--			{#each suggestions as { text, x, y }, i}-->
-	<!--				<li class="suggestion" on:click={() => apply_suggestion(x, y)}>{text}</li>-->
-	<!--			{/each}-->
-	<!--		</ul>-->
-	<!--		<div class="filter">-->
-	<!--			<div class="address-line-wrap" contenteditable="true">-->
-	<!--				{address}-->
-	<!--			</div>-->
-	<!--			<div class="radius-wrap">-->
-	<!--				<div class="icon-wrap">-->
-	<!--					<svg aria-hidden="true" focusable="false"-->
-	<!--							 class="icon"-->
-	<!--							 role="img"-->
-	<!--							 xmlns="http://www.w3.org/2000/svg"-->
-	<!--							 viewBox="0 0 512 512">-->
-	<!--						<path fill="currentColor"-->
-	<!--									d="M256 56c110.532 0 200 89.451 200 200 0 110.532-89.451 200-200 200-110.532 0-200-89.451-200-200 0-110.532 89.451-200 200-200m0-48C119.033 8 8 119.033 8 256s111.033 248 248 248 248-111.033 248-248S392.967 8 256 8zm0 168c-44.183 0-80 35.817-80 80s35.817 80 80 80 80-35.817 80-80-35.817-80-80-80z"></path>-->
-	<!--					</svg>-->
-	<!--				</div>-->
-	<!--				<div class="radius-input-wrap">-->
-	<!--					<input class="input" type="number" value="{radius}" max="50" min="0" /> км.-->
-	<!--				</div>-->
-	<!--			</div>-->
-	<!--		</div>-->
-	<!--	</div>-->
+  <div class="filter-wrp select-wrp">
+    <div class="filter select-variant">
+      <label for="lost">
+        <input id="lost" type="radio" value="lost" name="lost-found" />
+        Потеряные
+      </label>
+      <label for="found">
+        <input id="found" type="radio" value="found" name="lost-found" />
+        Найденые
+      </label>
+    </div>
+  </div>
+  <!--	<div class="filter-wrp select-wrp">-->
+  <!--		<div class="filter select-variant">-->
+  <!--			<label for="cat">-->
+  <!--				<input id="cat" type="radio" value="dog" name="animal" />-->
+  <!--				Собаки-->
+  <!--			</label>-->
+  <!--			<label for="dog">-->
+  <!--				<input id="dog" type="radio" value="cat" name="animal" />-->
+  <!--				Коты-->
+  <!--			</label>-->
+  <!--		</div>-->
+  <!--	</div>-->
+  <!--	<div class="filter-wrp date-picker-wrp">-->
+  <!--		<div class="filter">-->
+  <!--			<div class="date">-->
+  <!--				<input type="date" id="when" value="{date}" />-->
+  <!--			</div>-->
+  <!--			<div class="days">-->
+  <!--				+/-&nbsp;<input class="approx-days" type="number" max="90" min="0" value="5">&nbsp;дней-->
+  <!--			</div>-->
+  <!--		</div>-->
+  <!--	</div>-->
+  <!--	<div class="filter-wrp address-wrap">-->
+  <!--		<ul class="suggestions">-->
+  <!--			{#each suggestions as { text, x, y }, i}-->
+  <!--				<li class="suggestion" on:click={() => apply_suggestion(x, y)}>{text}</li>-->
+  <!--			{/each}-->
+  <!--		</ul>-->
+  <!--		<div class="filter">-->
+  <!--			<div class="address-line-wrap" contenteditable="true">-->
+  <!--				{address}-->
+  <!--			</div>-->
+  <!--			<div class="radius-wrap">-->
+  <!--				<div class="icon-wrap">-->
+  <!--					<svg aria-hidden="true" focusable="false"-->
+  <!--							 class="icon"-->
+  <!--							 role="img"-->
+  <!--							 xmlns="http://www.w3.org/2000/svg"-->
+  <!--							 viewBox="0 0 512 512">-->
+  <!--						<path fill="currentColor"-->
+  <!--									d="M256 56c110.532 0 200 89.451 200 200 0 110.532-89.451 200-200 200-110.532 0-200-89.451-200-200 0-110.532 89.451-200 200-200m0-48C119.033 8 8 119.033 8 256s111.033 248 248 248 248-111.033 248-248S392.967 8 256 8zm0 168c-44.183 0-80 35.817-80 80s35.817 80 80 80 80-35.817 80-80-35.817-80-80-80z"></path>-->
+  <!--					</svg>-->
+  <!--				</div>-->
+  <!--				<div class="radius-input-wrap">-->
+  <!--					<input class="input" type="number" value="{radius}" max="50" min="0" /> км.-->
+  <!--				</div>-->
+  <!--			</div>-->
+  <!--		</div>-->
+  <!--	</div>-->
 </section>
 <!--<Map update_address={update_address} update_suggestions={update_suggestion_list} />-->
 
