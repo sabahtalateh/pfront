@@ -22,8 +22,9 @@
     // window.ymaps.ready(set_yandex_maps)
   })
 
-  /// Page loading timer to show loader only if loading time greater then 100ms (to prevent blinking)
-  /// Interval is required here, same effect can be achieved with delay property of fade
+  /// Page loading timer to show loader only if loading time greater
+  //   then ${show_loader_after}ms (to prevent blinking)
+  /// Interval is required here, same effect can't be achieved with delayed fade
   ///  because faded element will be added to DOM right after creation
   let interval
   const loader_transition_duration = 150
@@ -36,13 +37,10 @@
     }, 100)
   })
 
-  filters.subscribe(x => {
-    if (x.load === 'loaded') {
-      clearInterval(interval)
-    }
-  })
+  filters.subscribe(x => x.load === 'loaded' && clearInterval(interval))
 
   let loader_visible = false
+  let loader_been_shown = false
   $: page_loaded = $filters.load === 'loaded'
   /// END
 </script>
@@ -51,14 +49,14 @@
   {#if $page_loading_time > show_loader_after}
     <h1
       transition:fade={{duration: loader_transition_duration}}
-      on:introstart={() => loader_visible = true}
+      on:introstart={() => {loader_visible = true; loader_been_shown = true}}
       on:outroend={() => {page_loaded = true; loader_visible = false}}
     >loading</h1>
   {/if}
 {/if}
 
 {#if page_loaded && !loader_visible}
-  <div transition:fade={{duration: loader_transition_duration}}>
+  <div transition:fade={{duration: loader_been_shown ? loader_transition_duration : 0}}>
     <Header />
     <PetsListFilters />
     <PetsList />
