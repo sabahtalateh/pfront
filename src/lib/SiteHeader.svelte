@@ -26,7 +26,7 @@
 </header>
 
 <style lang="scss">
-  @import "../utils";
+  @import '../utils';
 
   .header {
     @include outer-wrap;

@@ -1,57 +1,79 @@
 <script lang="ts">
-  import { yandex_maps as yandex_maps_store } from '$lib/stores/yandex_maps'
-  import { map_suggestions_store } from '$lib/stores/yandex_maps'
   import { onMount } from 'svelte'
+  import { ymaps_api } from '$lib/stores/ymaps_api'
+  import { filters, Circle, Map } from '$lib/index/stores/filters'
+  import { suggestion } from '$lib/index/stores/suggestion'
 
-  export let update_address
-  export let update_suggestions
-
-  let yandex_maps_api = null
-  let mounted = false
-  let map_loaded = false
   let yandex_map
-  let circle
-
+  let yandex_circle
+  let circle: Circle
 
   onMount(() => {
-    mounted = true
-    load_map()
-  })
+    $filters.load === 'loaded' &&
+    $ymaps_api.load === 'loaded' &&
+    init_map($ymaps_api.api, $filters.filters.map)
 
-  yandex_maps_store.subscribe((v) => {
-    if (v !== null) {
-      yandex_maps_api = v
-      load_map()
-    }
-  })
-
-  map_suggestions_store.subscribe(x => {
-    if (!yandex_map) {
-      return
-    }
-    yandex_map.setCenter([x.x, x.y])
-    circle.geometry.setCoordinates([x.x, x.y])
-  })
-
-  const load_map = () => {
-    if (yandex_maps_api === null || mounted === false || map_loaded) {
-      return
-    }
-
-    let center = [55.75361503443606, 37.620883000000006]
-    let zoom = 12
-
-    yandex_map = new yandex_maps_api.Map('map', {
-      center: center,
-      zoom: zoom,
-      controls: ['zoomControl', 'fullscreenControl']
+    $filters.load === 'loaded' &&
+    $ymaps_api.load === 'loaded' &&
+    filters.subscribe(({ load, filters }) => {
+      const new_circle: Circle = filters.map.circle
+      new_circle.radius !== circle.radius && animate_circle_radius(new_circle)
+      yandex_circle.properties.set(
+        'hintContent',
+        `Радиус поиска - ${new_circle.radius / 1000} км.`
+      )
     })
 
-    circle = new yandex_maps_api.Circle(
-      [[55.76, 37.6], 1000],
+    $filters.load === 'loaded' &&
+    $ymaps_api.load === 'loaded' &&
+    suggestion.subscribe((x) => {
+      if (x === null) return
+      yandex_map.setCenter([x.lat, x.lng])
+      yandex_circle.geometry.setCoordinates([x.lat, x.lng])
+      filters.update_circle_coords(x.lat, x.lng)
+      filters.update_address(x.address)
+    })
+  })
+
+  const init_map = (api, map: Map) => {
+    circle = map.circle
+    yandex_map = new api.Map('map', {
+      center: [map.circle.lat, map.circle.lng],
+      zoom: map.zoom,
+      controls: ['zoomControl', 'fullscreenControl']
+    })
+    yandex_circle = add_circle_to_map(api, yandex_map, circle)
+
+    yandex_map.events.add(['boundschange'], function(e) {
+      filters.update_zoom(e.get('newZoom'))
+    })
+
+    // https://yandex.ru/dev/maps/jsbox/2.1/geoobject_events
+    yandex_circle.events.add(['dragend'], function(e) {
+      const coords = e.originalEvent.target.geometry.getCoordinates()
+      filters.update_circle_coords(coords[0], coords[1])
+      api.geocode(coords).then(function(res) {
+        const firstGeoObject = res.geoObjects.get(0)
+        filters.update_address(firstGeoObject.getAddressLine())
+      })
+    })
+
+    yandex_map.events.add('click', function(e) {
+      const coords = e.get('coords')
+      filters.update_circle_coords(coords[0], coords[1])
+      yandex_circle.geometry.setCoordinates(coords)
+      api.geocode(coords).then(function(res) {
+        const firstGeoObject = res.geoObjects.get(0)
+        filters.update_address(firstGeoObject.getAddressLine())
+      })
+    })
+  }
+
+  const add_circle_to_map = (api, map, c: Circle): any => {
+    let circle = new api.Circle(
+      [[c.lat, c.lng], c.radius],
       {
-        balloonContent: 'Радиус круга - 10 км',
-        hintContent: 'Подвинь меня'
+        hintContent: `Радиус поиска - ${c.radius / 1000} км.`
       },
       {
         draggable: true,
@@ -61,53 +83,40 @@
         strokeWidth: 2
       }
     )
-
-    // https://yandex.ru/dev/maps/jsbox/2.1/geoobject_events
-    circle.events.add(['dragend'], function(e) {
-      const coords = e.originalEvent.target.geometry.getCoordinates()
-      // map_state.update((old) => {
-      //   return { x: coords[0], y: coords[1], radius: old.radius }
-      // })
-      console.log(e.originalEvent.target.geometry.getCoordinates())
-      console.log(e.originalEvent.target.geometry.getRadius())
-
-      yandex_maps_api.geocode(coords).then(function(res) {
-        const firstGeoObject = res.geoObjects.get(0)
-        update_address(firstGeoObject.getAddressLine())
-        console.log(firstGeoObject.getAddressLine())
-      })
-    })
-
-    yandex_map.events.add('click', function(e) {
-      const coords = e.get('coords')
-      circle.geometry.setCoordinates(coords)
-
-      yandex_maps_api.geocode(coords).then(function(res) {
-        const firstGeoObject = res.geoObjects.get(0)
-        update_address(firstGeoObject.getAddressLine())
-        console.log(firstGeoObject.getAddressLine())
-      })
-    })
-
-    yandex_map.events.add('dragend', function(e) {
-      console.log(123)
-    })
-
-    // yandex_maps_api.geocode('Тверск')
-    //   .then(function(res) {
-    //     let suggestions = []
-    //     for (let i = 0; i < res.metaData.geocoder.found; i++) {
-    //       const obj = res.geoObjects.get(i)
-    //       const coords = obj.geometry.getCoordinates()
-    //       suggestions.push({ text: obj.properties.get('name'), x: coords[0], y: coords[1] })
-    //     }
-    //
-    //     update_suggestions(suggestions)
-    //   })
-
-    yandex_map.geoObjects.add(circle)
-    map_loaded = true
+    map.geoObjects.add(circle)
+    return circle
   }
+
+  /// << Circle size animation
+  const size_animation = {
+    duration: 80,
+    steps: 10,
+    step_duration: -0
+  }
+  size_animation.step_duration = size_animation.duration / size_animation.steps
+
+  function animate_circle_radius(new_circle: Circle) {
+    const changed_by = new_circle.radius - circle.radius
+    const animation_radius_step_size = changed_by / size_animation.steps
+
+    let animated_radius = circle.radius
+
+    const interval = setInterval(() => {
+      animated_radius += animation_radius_step_size
+      yandex_circle.geometry.setRadius(animated_radius)
+
+      if (changed_by > 0 && animated_radius >= new_circle.radius) {
+        clearInterval(interval)
+        circle = new_circle
+      }
+      if (changed_by <= 0 && animated_radius <= new_circle.radius) {
+        clearInterval(interval)
+        circle = new_circle
+      }
+    }, size_animation.step_duration)
+  }
+
+  /// Circle size animation >>
 </script>
 
 <section class="filtering-map wrap hidden">
@@ -124,7 +133,7 @@
     .map {
       width: 100%;
       height: 540px;
-      background: lightgray;
+      background: lightyellow;
     }
   }
 </style>

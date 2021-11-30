@@ -1,133 +1,183 @@
 <script lang="ts">
   import { filters } from '$lib/index/stores/filters'
-  import { get, readable, writable } from 'svelte/store'
-  import { onMount } from 'svelte'
+  import Map from '$lib/index/filters/Map.svelte'
+  import { ymaps_api } from '$lib/stores/ymaps_api'
+  import { suggestion } from '$lib/index/stores/suggestion'
 
-  // import { browser } from '$app/env'
-  // import { get } from 'svelte/store'
-  //
-  // import Map from '$lib/index/filters/Map.svelte'
-  // import { date_to_input_value } from '$lib/utils'
-  // import { map_suggestions_store, yandex_maps as yandex_maps_store } from '$lib/stores/yandex_maps'
-  // import { filters } from '$lib/stores/filters_local'
-  //
-  // let yandex_maps_api = null
-  // yandex_maps_store.subscribe(v => {
-  //   yandex_maps_api = v ?? null
-  // })
-  //
-  // let date = date_to_input_value(new Date())
-  // let address = 'lorem'
-  // let radius = 5
-  // let suggestions: [{ text: string, x: number, y: number }] = []
-  //
-  // const update_address = (new_address: string) => {
-  //   address = new_address
-  // }
-  //
-  // const update_suggestion_list = (new_suggestions: [{ text: string, x: number, y: number }]) => {
-  //   suggestions = new_suggestions
-  // }
-  //
-  // const apply_suggestion = (x: number, y: number) => {
-  //   map_suggestions_store.set({ x, y })
-  // }
+  let { announcement_type, animal, when, map } = $filters.filters
 
-  // $: console.log(get(filters))
+  const update_announcement_type = (e) => filters.update_announcement_type(e.target.value)
+  const update_animal = (e) => filters.update_animal(e.target.value)
+  const update_when_date = (e) => {
+    const x = e.target.value.split('-')
+    filters.update_when_date(x[0], x[1], x[2])
+  }
+  const update_when_roughly = (e) => filters.update_when_roughly(parseInt(e.target.value))
+  const update_radius = (e) => filters.update_circle_radius(Math.floor(e.target.value * 1000))
 
-  // if (browser) {
-  //   console.log(localStorage.getItem('filters'))
-  // } else {
-  //   console.log(123)
-  // }
+  /// <<< Handle address suggestions
+  let address: string
+  const store_address = (e) => (address = e.target.innerHTML)
+  const restore_address = () => filters.update_address(address)
 
-  // console.log(get(filters))
-
-
-  // const time = readable(new Date(), function start(set) {
-  //   const interval = setInterval(() => {
-  //     set(new Date())
-  //   }, 10)
-  //
-  //   return function stop() {
-  //     clearInterval(interval)
-  //   }
-  // })
-
+  let suggestions: { text: string; lat: number; lng: number }[] = []
+  let suggestionsDebounce: NodeJS.Timer
+  const show_suggestions = (e: any) => {
+    clearTimeout(suggestionsDebounce)
+    suggestionsDebounce = setTimeout(() => {
+      $ymaps_api.api.geocode(e.target.innerHTML).then(function (res: any) {
+        suggestions = []
+        for (let i = 0; i < res.metaData.geocoder.found; i++) {
+          const obj = res.geoObjects.get(i)
+          const coords = obj.geometry.getCoordinates()
+          suggestions.push({ text: obj.properties.get('text'), lat: coords[0], lng: coords[1] })
+        }
+      })
+    }, 400)
+  }
+  const clear_suggestions = () => {
+    suggestions = []
+  }
+  /// >>>
 </script>
 
 <section class="filtering wrap">
   <div class="filter-wrp select-wrp">
     <div class="filter select-variant">
       <label for="lost">
-        <input id="lost" type="radio" value="lost" name="lost-found" />
+        <input
+          id="lost"
+          type="radio"
+          value="lost"
+          name="lost-found"
+          bind:group={announcement_type}
+          on:change={update_announcement_type}
+        />
         Потеряные
       </label>
       <label for="found">
-        <input id="found" type="radio" value="found" name="lost-found" />
+        <input
+          id="found"
+          type="radio"
+          value="found"
+          name="lost-found"
+          bind:group={announcement_type}
+          on:change={update_announcement_type}
+        />
         Найденые
       </label>
     </div>
   </div>
-  <!--	<div class="filter-wrp select-wrp">-->
-  <!--		<div class="filter select-variant">-->
-  <!--			<label for="cat">-->
-  <!--				<input id="cat" type="radio" value="dog" name="animal" />-->
-  <!--				Собаки-->
-  <!--			</label>-->
-  <!--			<label for="dog">-->
-  <!--				<input id="dog" type="radio" value="cat" name="animal" />-->
-  <!--				Коты-->
-  <!--			</label>-->
-  <!--		</div>-->
-  <!--	</div>-->
-  <!--	<div class="filter-wrp date-picker-wrp">-->
-  <!--		<div class="filter">-->
-  <!--			<div class="date">-->
-  <!--				<input type="date" id="when" value="{date}" />-->
-  <!--			</div>-->
-  <!--			<div class="days">-->
-  <!--				+/-&nbsp;<input class="approx-days" type="number" max="90" min="0" value="5">&nbsp;дней-->
-  <!--			</div>-->
-  <!--		</div>-->
-  <!--	</div>-->
-  <!--	<div class="filter-wrp address-wrap">-->
-  <!--		<ul class="suggestions">-->
-  <!--			{#each suggestions as { text, x, y }, i}-->
-  <!--				<li class="suggestion" on:click={() => apply_suggestion(x, y)}>{text}</li>-->
-  <!--			{/each}-->
-  <!--		</ul>-->
-  <!--		<div class="filter">-->
-  <!--			<div class="address-line-wrap" contenteditable="true">-->
-  <!--				{address}-->
-  <!--			</div>-->
-  <!--			<div class="radius-wrap">-->
-  <!--				<div class="icon-wrap">-->
-  <!--					<svg aria-hidden="true" focusable="false"-->
-  <!--							 class="icon"-->
-  <!--							 role="img"-->
-  <!--							 xmlns="http://www.w3.org/2000/svg"-->
-  <!--							 viewBox="0 0 512 512">-->
-  <!--						<path fill="currentColor"-->
-  <!--									d="M256 56c110.532 0 200 89.451 200 200 0 110.532-89.451 200-200 200-110.532 0-200-89.451-200-200 0-110.532 89.451-200 200-200m0-48C119.033 8 8 119.033 8 256s111.033 248 248 248 248-111.033 248-248S392.967 8 256 8zm0 168c-44.183 0-80 35.817-80 80s35.817 80 80 80 80-35.817 80-80-35.817-80-80-80z"></path>-->
-  <!--					</svg>-->
-  <!--				</div>-->
-  <!--				<div class="radius-input-wrap">-->
-  <!--					<input class="input" type="number" value="{radius}" max="50" min="0" /> км.-->
-  <!--				</div>-->
-  <!--			</div>-->
-  <!--		</div>-->
-  <!--	</div>-->
+  <div class="filter-wrp select-wrp">
+    <div class="filter select-variant">
+      <label for="cat">
+        <input
+          id="cat"
+          type="radio"
+          value="dog"
+          name="animal"
+          bind:group={animal}
+          on:change={update_animal}
+        />
+        Собаки
+      </label>
+      <label for="dog">
+        <input
+          id="dog"
+          type="radio"
+          value="cat"
+          name="animal"
+          bind:group={animal}
+          on:change={update_animal}
+        />
+        Коты
+      </label>
+    </div>
+  </div>
+  <div class="filter-wrp date-picker-wrp">
+    <div class="filter">
+      <div class="date">
+        <input
+          type="date"
+          id="when"
+          value="{when.y}-{when.m}-{when.d}"
+          on:change={update_when_date}
+        />
+      </div>
+      <div class="days">
+        +/-&nbsp;<input
+          class="approx-days"
+          type="number"
+          max="90"
+          min="0"
+          value={when.roughly}
+          on:change={update_when_roughly}
+        />&nbsp;дней
+      </div>
+    </div>
+  </div>
+  <div class="filter-wrp address-wrp">
+    {#if suggestions.length > 0}
+      <ul class="suggestions">
+        {#each suggestions as { text, lat, lng }}
+          <li
+            class="suggestion"
+            on:click={() => {
+              suggestion.set({ address: text, lat, lng })
+              clear_suggestions()
+            }}
+          >
+            {text}
+          </li>
+        {/each}
+      </ul>
+    {/if}
+
+    <div class="filter">
+      <div
+        class="address-line-wrap"
+        contenteditable="true"
+        bind:innerHTML={$filters.filters.map.address}
+        on:focus={store_address}
+        on:focusout={restore_address}
+        on:input={show_suggestions}
+      />
+      <div class="radius-wrap">
+        <div class="icon-wrap">
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            class="icon"
+            role="img"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+          >
+            <path
+              fill="currentColor"
+              d="M256 56c110.532 0 200 89.451 200 200 0 110.532-89.451 200-200 200-110.532 0-200-89.451-200-200 0-110.532 89.451-200 200-200m0-48C119.033 8 8 119.033 8 256s111.033 248 248 248 248-111.033 248-248S392.967 8 256 8zm0 168c-44.183 0-80 35.817-80 80s35.817 80 80 80 80-35.817 80-80-35.817-80-80-80z"
+            />
+          </svg>
+        </div>
+        <div class="radius-input-wrap">
+          <input
+            class="input"
+            type="number"
+            value={map.circle.radius / 1000}
+            max="50"
+            min="0.5"
+            step="0.5"
+            on:change={update_radius}
+          /> км.
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
-<!--<Map update_address={update_address} update_suggestions={update_suggestion_list} />-->
+<Map />
 
+<!--  update_address={update_address} update_suggestions={update_suggestion_list} -->
 <style lang="scss">
-  @import "../../../utils";
-
-  .loader-wrap {
-    @include outer-wrap;
-    padding: 16px;
-  }
+  @import '../../../utils';
 
   .wrap {
     @include outer-wrap;
@@ -179,9 +229,15 @@
       display: grid;
     }
 
-    .address-wrap {
+    .address-wrp {
       position: relative;
       overflow: visible;
+      justify-items: left;
+
+      .filter {
+        padding: 6px;
+        width: 100%;
+      }
 
       .suggestions {
         position: absolute;
@@ -190,19 +246,26 @@
         top: 100%;
         z-index: 1;
         border-left: 3px double black;
+        border-bottom: 3px double black;
         margin: 0 0 0 -3px;
         padding: 6px;
         box-sizing: border-box;
         list-style: none;
 
         .suggestion {
-          padding: 5px;
+          padding: 6px;
           border-top: 1px solid lightgray;
+          cursor: default;
+
+          &:hover {
+            background: lightyellow;
+          }
         }
       }
 
       .address-line-wrap {
         display: inline-block;
+        width: 100%;
       }
 
       .radius-wrap {
@@ -221,7 +284,7 @@
           display: inline-block;
 
           .input {
-            width: 36px;
+            width: 42px;
           }
         }
       }
